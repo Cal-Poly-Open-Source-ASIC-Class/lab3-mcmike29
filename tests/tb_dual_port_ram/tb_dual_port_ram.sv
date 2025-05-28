@@ -61,11 +61,35 @@ module tb_dual_port_ram;
         read_portB(9'h100, 32'hFACEFACE);
 
         // Test 3: Simultaneous conflict (both access mem0)
-        write_portA(9'h010, 32'hAAAA1234);
-        write_portB(9'h011, 32'hBBBB5678);
+        @(posedge clk);
+        pA_wb_addr_i = 9'h010;
+        pB_wb_addr_i = 9'h011;
+        pA_wb_data_i = 32'hAAAA1234;
+        pB_wb_data_i = 32'hBBBB5678;
+        pA_wb_sel_i  = 4'b1111;
+        pB_wb_sel_i  = 4'b1111;
+        pA_wb_we_i   = 1;
+        pB_wb_we_i   = 1;
+        pA_wb_stb_i  = 1;
+        pB_wb_stb_i  = 1;
 
-        read_portA(9'h010, 32'hAAAA1234);
-        read_portB(9'h011, 32'hBBBB5678);
+        // Wait for Port A to complete (it has priority)
+        wait (pA_wb_ack_o);
+        pA_wb_stb_i = 0;
+        pA_wb_we_i  = 0;
+
+        // Now wait for Port B to proceed (stall will be removed after A finishes)
+        wait (pB_wb_ack_o);
+        pB_wb_stb_i = 0;
+        pB_wb_we_i  = 0;
+
+
+        @(posedge clk);
+        pA_wb_stb_i = 0;
+        pB_wb_stb_i = 0;
+        pA_wb_we_i  = 0;
+        pB_wb_we_i  = 0;
+
 
         $display("All tests completed.");
         $finish;
@@ -84,7 +108,6 @@ module tb_dual_port_ram;
             pA_wb_we_i   = 1;
             pA_wb_stb_i  = 1;
             wait (pA_wb_ack_o && !pA_wb_stall_o);
-            @(posedge clk);
             pA_wb_stb_i = 0;
             pA_wb_we_i  = 0;
             $display("Write Port A: addr=0x%0h, data=0x%0h", addr, data);
@@ -100,7 +123,6 @@ module tb_dual_port_ram;
             pB_wb_we_i   = 1;
             pB_wb_stb_i  = 1;
             wait (pB_wb_ack_o && !pB_wb_stall_o);
-            @(posedge clk);
             pB_wb_stb_i = 0;
             pB_wb_we_i  = 0;
             $display("Write Port B: addr=0x%0h, data=0x%0h", addr, data);
@@ -115,7 +137,6 @@ module tb_dual_port_ram;
             pA_wb_we_i   = 0;
             pA_wb_stb_i  = 1;
             wait (pA_wb_ack_o && !pA_wb_stall_o);
-            @(posedge clk);
             pA_wb_stb_i = 0;
             if (pA_wb_data_o !== expected)
                 $display("FAIL: Port A read 0x%0h from addr 0x%0h, expected 0x%0h", pA_wb_data_o, addr, expected);
@@ -132,7 +153,6 @@ module tb_dual_port_ram;
             pB_wb_we_i   = 0;
             pB_wb_stb_i  = 1;
             wait (pB_wb_ack_o && !pB_wb_stall_o);
-            @(posedge clk);
             pB_wb_stb_i = 0;
             if (pB_wb_data_o !== expected)
                 $display("FAIL: Port B read 0x%0h from addr 0x%0h, expected 0x%0h", pB_wb_data_o, addr, expected);

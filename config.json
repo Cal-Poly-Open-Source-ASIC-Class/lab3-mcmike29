@@ -1,7 +1,7 @@
 {
     "DESIGN_NAME": "dual_port_ram",
     "VERILOG_FILES": "./rtl/dual_port_ram.sv",
-    "CLOCK_PERIOD": 10,
+    "CLOCK_PERIOD": 30,
     "CLOCK_PORT": "clk",
 
     "FP_PDN_VOFFSET": 5,
@@ -26,7 +26,7 @@
     "SYNTH_AUTONAME": true,
 
     "FP_SIZING": "absolute",
-    "DIE_AREA": [0, 0, 2000, 2000],
+    "DIE_AREA": [0, 0, 1500, 1500],
     "VDD_NETS": [
         "VPWR"
     ],
@@ -36,11 +36,11 @@
     "MACROS": {
       "DFFRAM256x32": {
           "instances": {
-          "instance1": {
-              "location": [1000, 1650],
+          "mem0": {
+              "location": [100, 100],
               "orientation": "FN"
           },
-          "instance2": {
+          "mem1": {
               "location": [100, 750],
               "orientation": "FS"
           }
@@ -63,29 +63,32 @@
               ]
           },
           "lib": {
-              "*": "dir::macros/dffram256x32//timing/lib/max/DFFRAM256x32.Fastest.lib"
+              "*": "dir::macros/dffram256x32/timing/lib/nom/DFFRAM256x32.Typical.lib"
           },
           "nl": [
-            "dir::path_to/nl/macro.nl.v"
+            "dir::macros/dffram256x32/hdl/gl/DFFRAM256x32.v"
           ],
           "pnl": [
-            "dir::path_to/pnl/macro.pnl.v"
+            "dir::macros/dffram256x32/hdl/gl/DFFRAM256x32.v"
           ]
       }
      },
     "PDN_MACRO_CONNECTIONS": [
-        "instance1 VPWR VGND VPWR VGND",
-        "instance2 VPWR VGND VPWR VGND"
+        "mem0 VPWR VGND VPWR VGND",
+        "mem1 VPWR VGND VPWR VGND"
     ],
     "PL_RESIZER_ALLOW_SETUP_VIOS": true,
     "GRT_RESIZER_ALLOW_SETUP_VIOS": true,
     "GRT_ANTENNA_ITERS": 15,
     "GRT_ANTENNA_MARGIN": 15,
     "RUN_HEURISTIC_DIODE_INSERTION": true,
-    "DESIGN_REPAIR_MAX_WIRE_LENGTH": 800,
-    "PL_WIRE_LENGTH_COEF": 0.05,
+    "DESIGN_REPAIR_MAX_WIRE_LENGTH": 500,
+    "PL_WIRE_LENGTH_COEF": 0.01,
     "RUN_POST_GRT_DESIGN_REPAIR": true,
-    "DESIGN_REPAIR_MAX_SLEW_PCT": 30,
-    "DESIGN_REPAIR_MAX_CAP_PCT": 30,
+    "RUN_TIEINSERT": true,
+    "RUN_REBUFFER": true,
+    "REBUFFER_MAX_FANOUT": 8,
+    "DESIGN_REPAIR_MAX_SLEW_PCT": 50,
+    "DESIGN_REPAIR_MAX_CAP_PCT": 50,
     "MAX_TRANSITION_CONSTRAINT": 1.5
 }
